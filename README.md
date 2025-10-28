@@ -3,6 +3,13 @@ Small program that allows Microsoft Agent Scripting Helper scripts to be ran on 
 
 ## How to use
 MAWS is extremely simple to use. Just download and run the installer, and you're all good! MAWS works by loading MASH files from a URL and running them. Once the script is over, each character in the script will hide and MAWS will close on it's own. MAWS also allows for characters to greet you on holidays. 
+## Using MAWS in your websites
+You can embed maws into your websites by 
+1. Creating a new MASH Script in MASH
+2. Saving your script file as .MSH
+3. Uploading the MSH file anywhere on your website
+4. Copying the file URL of the script and replacing http/https at the beginning with msagentweb
+5. Embedding the msagentweb link anywhere on your website.
 ## System Requirements
 - 32 MB of RAM, 30 MB of Free Disk Space.
 - Windows 98, 2000, ME, XP, Vista, 7, 8, 8.1, 10, 11
