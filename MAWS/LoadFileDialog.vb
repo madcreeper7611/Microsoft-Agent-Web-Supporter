@@ -16,6 +16,6 @@ Public Class LoadFileDialog
     End Sub
 
     Private Sub CancelButtonClick(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles CancelOpenButton.Click
-        Me.Close()
+        Application.Exit()
     End Sub
 End Class

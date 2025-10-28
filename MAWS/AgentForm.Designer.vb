@@ -26,7 +26,10 @@ Partial Class AgentForm
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(AgentForm))
         Me.ControlAxAgent = New AxAgentObjects.AxAgent
         Me.MAWSNotifyIcon = New System.Windows.Forms.NotifyIcon(Me.components)
+        Me.TrayCMS = New System.Windows.Forms.ContextMenuStrip(Me.components)
+        Me.ExitTSMI = New System.Windows.Forms.ToolStripMenuItem
         CType(Me.ControlAxAgent, System.ComponentModel.ISupportInitialize).BeginInit()
+        Me.TrayCMS.SuspendLayout()
         Me.SuspendLayout()
         '
         'ControlAxAgent
@@ -40,8 +43,22 @@ Partial Class AgentForm
         '
         'MAWSNotifyIcon
         '
+        Me.MAWSNotifyIcon.ContextMenuStrip = Me.TrayCMS
+        Me.MAWSNotifyIcon.Icon = CType(resources.GetObject("MAWSNotifyIcon.Icon"), System.Drawing.Icon)
         Me.MAWSNotifyIcon.Text = "Microsoft Agent Web Support"
         Me.MAWSNotifyIcon.Visible = True
+        '
+        'TrayCMS
+        '
+        Me.TrayCMS.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ExitTSMI})
+        Me.TrayCMS.Name = "TrayCMS"
+        Me.TrayCMS.Size = New System.Drawing.Size(93, 26)
+        '
+        'ExitTSMI
+        '
+        Me.ExitTSMI.Name = "ExitTSMI"
+        Me.ExitTSMI.Size = New System.Drawing.Size(92, 22)
+        Me.ExitTSMI.Text = "Exit"
         '
         'AgentForm
         '
@@ -51,6 +68,7 @@ Partial Class AgentForm
         Me.ControlBox = False
         Me.Controls.Add(Me.ControlAxAgent)
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None
+        Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.MaximizeBox = False
         Me.MinimizeBox = False
         Me.Name = "AgentForm"
@@ -59,9 +77,12 @@ Partial Class AgentForm
         Me.ShowInTaskbar = False
         Me.Text = "Microsoft Agent Web Support"
         CType(Me.ControlAxAgent, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.TrayCMS.ResumeLayout(False)
         Me.ResumeLayout(False)
 
     End Sub
     Friend WithEvents ControlAxAgent As AxAgentObjects.AxAgent
     Friend WithEvents MAWSNotifyIcon As System.Windows.Forms.NotifyIcon
+    Friend WithEvents TrayCMS As System.Windows.Forms.ContextMenuStrip
+    Friend WithEvents ExitTSMI As System.Windows.Forms.ToolStripMenuItem
 End Class

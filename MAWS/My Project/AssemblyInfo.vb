@@ -8,10 +8,10 @@ Imports System.Runtime.InteropServices
 
 ' Review the values of the assembly attributes
 
-<Assembly: AssemblyTitle("Microsoft Agent Web Support")> 
+<Assembly: AssemblyTitle("Microsoft Agent Web Supporter")> 
 <Assembly: AssemblyDescription("Allows Microsoft Agent characters to be loaded on modern web browsers.")> 
 <Assembly: AssemblyCompany("TMAFE.COM")> 
-<Assembly: AssemblyProduct("Microsoft Agent Web Support")> 
+<Assembly: AssemblyProduct("Microsoft Agent Web Supporter")> 
 <Assembly: AssemblyCopyright("Copyright © 2018 - 2025 TMAFE.COM")> 
 <Assembly: AssemblyTrademark("")> 
 
@@ -31,5 +31,5 @@ Imports System.Runtime.InteropServices
 ' by using the '*' as shown below:
 ' <Assembly: AssemblyVersion("1.0.*")> 
 
-<Assembly: AssemblyVersion("0.0.0.1")> 
-<Assembly: AssemblyFileVersion("0.0.0.1")> 
+<Assembly: AssemblyVersion("1.0.0.0")> 
+<Assembly: AssemblyFileVersion("1.0.0.0")> 
