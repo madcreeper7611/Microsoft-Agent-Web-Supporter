@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
 Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "MAWS", "MAWS\MAWS.vbproj", "{DA2EBCF9-8C9B-43C5-A608-90C0F260FD2E}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "MAWS_Setup", "MAWS_Setup\MAWS_Setup.vdproj", "{447A8176-90A8-4ECD-9834-7B18EB28DAA6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -13,6 +15,8 @@ Global
 		{DA2EBCF9-8C9B-43C5-A608-90C0F260FD2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DA2EBCF9-8C9B-43C5-A608-90C0F260FD2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DA2EBCF9-8C9B-43C5-A608-90C0F260FD2E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{447A8176-90A8-4ECD-9834-7B18EB28DAA6}.Debug|Any CPU.ActiveCfg = Debug
+		{447A8176-90A8-4ECD-9834-7B18EB28DAA6}.Release|Any CPU.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
