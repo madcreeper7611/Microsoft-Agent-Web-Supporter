@@ -45,12 +45,13 @@ Public Class AgentForm
 
 
         ScriptURL = ScriptURL.Replace("""", "")
+
         If ScriptURL.StartsWith("msagentweb://") Then
-            ScriptURL = ScriptURL.Remove(0, "msagentweb://".Length)
-        End If
-        If Not ScriptURL.StartsWith("http://") AndAlso Not ScriptURL.StartsWith("https://") Then
+            ScriptURL = ScriptURL.Replace("msagentweb://", "http://")
+        ElseIf Not ScriptURL.StartsWith("http://") AndAlso Not ScriptURL.StartsWith("https://") Then
             ScriptURL = "http://" & ScriptURL
         End If
+
         Try
             Dim ScriptText = client.DownloadString(ScriptURL)
 
@@ -164,7 +165,7 @@ Public Class AgentForm
                 If LocationX.ToLower.Contains("left") Then
                     PointX = ScreenLeft
                 ElseIf LocationX.ToLower.Contains("center") Then
-                    PointX = ScreenLeft - ScreenRight
+                    PointX = ScreenRight / 2
                 ElseIf LocationX.ToLower.Contains("right") Then
                     PointX = ScreenRight
                 ElseIf IntRegex.IsMatch(LocationX) Then
@@ -176,7 +177,7 @@ Public Class AgentForm
                 If LocationY.ToLower.Contains("top") Then
                     PointY = ScreenTop
                 ElseIf LocationY.ToLower.Contains("center") Then
-                    PointY = ScreenTop - ScreenBottom
+                    PointY = ScreenBottom / 2
                 ElseIf LocationY.ToLower.Contains("bottom") Then
                     PointY = ScreenBottom
                 ElseIf IntRegex.IsMatch(LocationY) Then
