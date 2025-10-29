@@ -146,11 +146,12 @@ Public Class AgentForm
                     If Not SpeakString = Nothing Then
                         Return ControlAxAgent.Characters(CharID).Speak(SpeakString)
                     End If
-
                     Return Nothing
                 ElseIf ActionMatch.Contains(".think") Then
-                    MessageBox.Show(CharID)
-                    Return ControlAxAgent.Characters(CharID).Think(SpeakString)
+                    If Not SpeakString = Nothing Then
+                        Return ControlAxAgent.Characters(CharID).Speak(SpeakString)
+                    End If
+                    Return Nothing
                 End If
 
                 Return Nothing
