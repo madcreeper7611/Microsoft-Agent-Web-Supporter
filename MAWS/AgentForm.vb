@@ -43,7 +43,6 @@ Public Class AgentForm
         ' For example: If the current parse is [Characters] then it will start adding Characters to the group.
         Dim CurrentParse As String
 
-
         ScriptURL = ScriptURL.Replace("""", "")
 
         If ScriptURL.StartsWith("msagentweb://") Then
@@ -102,7 +101,7 @@ Public Class AgentForm
     ' Parses the current line to check if it can run any actions on it.
     Private Function GetActionFromLine(ByVal Line As String)
         Dim ActionRegex As New Regex("[A-Za-z0-9]+\.[A-Za-z0-9]+")
-        Dim QuotesRegex As New Regex("""(?:[^""]|"""")*""(\s+&\s+[A-Za-z0-9]+\(\)\s+&\s+)?")
+        Dim QuotesRegex As New Regex("(("")?[A-Za-z0-9]+\(\)\s+&\s+)?""(?:[^""]|"""")*""(\s+&\s+[A-Za-z0-9]+\(\)""?(\s+&\s+)?)?")
         Dim PointRegex As New Regex("[a-zA-Z0-9]+, [a-zA-Z0-9]+")
         Dim IntRegex As New Regex("[0-9]+")
 
@@ -130,7 +129,7 @@ Public Class AgentForm
                         SpeakString = SpeakString.Replace(M.ToString, GetDay)
                     ElseIf Match.Contains("getdate") Then
                         SpeakString = SpeakString.Replace(M.ToString, GetDate)
-                    ElseIf Match.Contains("holiday") AndAlso Holiday() <> "" Then
+                    ElseIf Match.Contains("holiday") Then
                         SpeakString = SpeakString.Replace(M.ToString, Holiday)
                     End If
                 Next
@@ -144,7 +143,11 @@ Public Class AgentForm
                     ControlAxAgent.Characters(CharID).Get("Animation", QuotesMatch)
                     Return ControlAxAgent.Characters(CharID).Play(QuotesMatch)
                 ElseIf ActionMatch.Contains(".speak") Then
-                    Return ControlAxAgent.Characters(CharID).Speak(SpeakString)
+                    If Not SpeakString = Nothing Then
+                        Return ControlAxAgent.Characters(CharID).Speak(SpeakString)
+                    End If
+
+                    Return Nothing
                 ElseIf ActionMatch.Contains(".think") Then
                     MessageBox.Show(CharID)
                     Return ControlAxAgent.Characters(CharID).Think(SpeakString)
@@ -215,7 +218,7 @@ Public Class AgentForm
         End If
     End Function
 
-    Private Function GetTimeOfDay()
+    Private Function GetTimeOfDay() As String
         If Date.Now.Hour < 12 Then
             Return "Morning"
         ElseIf Date.Now.Hour < 17 Then
@@ -293,6 +296,8 @@ Public Class AgentForm
 
     ' Gets all characters in the script and adds the options to show/hide them from the tray icon.
     Private Sub TrayCMS_Opening(ByVal sender As System.Object, ByVal e As System.ComponentModel.CancelEventArgs) Handles TrayCMS.Opening
+        TrayCMS.Items.Clear()
+
         ' Gets each character ID in the CharIDs list
         For Each CharID As String In CharIDs
             ' Checks if the character is currently visible then adds the option to show/hide the character.
@@ -302,6 +307,8 @@ Public Class AgentForm
                 TrayCMS.Items.Add("Show " & CharID)
             End If
         Next
+
+        TrayCMS.Items.Add("Exit")
     End Sub
 
     Private Sub TrayCMS_ItemClicked(ByVal sender As System.Object, ByVal e As System.Windows.Forms.ToolStripItemClickedEventArgs) Handles TrayCMS.ItemClicked
@@ -312,15 +319,13 @@ Public Class AgentForm
             ControlAxAgent.Characters(ItemText.Substring(5)).Hide()
         ElseIf ItemText.StartsWith("Show") Then
             ControlAxAgent.Characters(ItemText.Substring(5)).Show()
+        ElseIf ItemText = "Exit" Then
+            For Each CharID In CharIDs
+                ControlAxAgent.Characters(CharID).StopAll()
+            Next
+
+            HideAllCharacters()
         End If
-    End Sub
-
-    Private Sub ExitTSMI_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles ExitTSMI.Click
-        For Each CharID In CharIDs
-            ControlAxAgent.Characters(CharID).StopAll()
-        Next
-
-        HideAllCharacters()
     End Sub
 
     Private Sub HideAllCharacters()
