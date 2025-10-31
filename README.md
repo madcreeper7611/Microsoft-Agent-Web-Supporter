@@ -6,12 +6,12 @@ Microsoft Agent Web Supporter (MAWS for short) is a free and open source program
 MAWS is extremely simple to use. Just download and run the installer, and you're all good! MAWS works by loading MASH files from a URL and running them in memory. Once the script is over, each character in the script will hide and MAWS will close on it's own. MAWS also allows for characters to greet you on holidays. 
 ## Using MAWS in your websites
 You can embed maws into your websites by 
-1. Installing and opening MASH
+1. Open MASH
 2. Create a new MASH Script 
-3. Saving your script file as .MSH
-4. Uploading the MSH file anywhere on your website
-5. Copying the file URL of the script and replacing http/https at the beginning with msagentweb
-6. Embedding the msagentweb link anywhere on your website.
+3. Save your script file as .MSH
+4. Upload the MSH file anywhere on your website
+5. Copy the file URL of the script and replace http/https at the beginning with msagentweb
+6. Embed the msagentweb link anywhere on your website.
 ## System Requirements
 - 32 MB of RAM, 6 MB of Free Disk Space.
 - Windows 98, 2000, ME, XP, Vista, 7, 8, 8.1, 10, 11
