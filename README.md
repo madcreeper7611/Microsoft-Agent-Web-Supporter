@@ -1,5 +1,6 @@
 # Microsoft-Agent-Web-Supporter
 Microsoft Agent Web Supporter (MAWS for short) is a free and open source program which allows Microsoft Agent Scripting Helper scripts to run on modern web browsers using a custom URL protocol. Works on any browser that allows for custom protocols (Microsoft Edge, Google Chrome, Mozilla FireFox, and more)
+![alt text](https://raw.githubusercontent.com/madcreeper7611/Microsoft-Agent-Web-Supporter/master/maws_logo.png "RetroBar")
 
 ## How to use
 MAWS is extremely simple to use. Just download and run the installer, and you're all good! MAWS works by loading MASH files from a URL and running them in memory. Once the script is over, each character in the script will hide and MAWS will close on it's own. MAWS also allows for characters to greet you on holidays. 
