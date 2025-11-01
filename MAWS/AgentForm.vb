@@ -115,8 +115,11 @@ Public Class AgentForm
                 End If
             Next
 
-            ' Hides every character in a script if the script has less than 2 commands.
-            If CommandsCount < 2 Then
+            If CharIDs.Count < 1 Then
+                ' Exits the program if the script has 0 loaded characters.
+                Application.Exit()
+            ElseIf CommandsCount < 2 Then
+                ' Hides every character at the end of a script if the script has less than 2 commands.
                 HideAllCharacters()
             End If
         Catch ex As Exception
@@ -441,10 +444,6 @@ Public Class AgentForm
                 WaitFor(HideReq)
             End If
         Next
-
-        If CharIDs.Count < 1 Then
-            Application.Exit()
-        End If
     End Sub
 
     Private Sub ControlAxAgent_RequestComplete(ByVal sender As System.Object, ByVal e As AxAgentObjects._AgentEvents_RequestCompleteEvent) Handles ControlAxAgent.RequestComplete
