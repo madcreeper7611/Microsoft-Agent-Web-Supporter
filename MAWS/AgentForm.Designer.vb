@@ -45,7 +45,7 @@ Partial Class AgentForm
         '
         Me.MAWSNotifyIcon.ContextMenuStrip = Me.TrayCMS
         Me.MAWSNotifyIcon.Icon = CType(resources.GetObject("MAWSNotifyIcon.Icon"), System.Drawing.Icon)
-        Me.MAWSNotifyIcon.Text = "Microsoft Agent Web Support"
+        Me.MAWSNotifyIcon.Text = "Microsoft Agent Web Supporter"
         Me.MAWSNotifyIcon.Visible = True
         '
         'TrayCMS

@@ -1,4 +1,5 @@
-﻿Imports System.Net
+﻿Imports System.IO
+Imports System.Net
 Imports System.Text
 Imports AgentObjects
 Imports System.Text.RegularExpressions
@@ -75,13 +76,18 @@ Public Class AgentForm
                         ' Detects the current parse and runs actions based off it.
                         If CurrentParse = "[Characters]" Then
                             ' Loads all of the characters in the MASH script.
-                            Dim CharID As String = Line.Remove(Line.LastIndexOf("="))
-                            ControlAxAgent.Characters.Load(CharID, AfterEquals)
-                            ControlAxAgent.Characters(CharID).Get("State", "Showing, Hiding, Speaking, Moving, Gesturing, Idling, Hearing, Listening", True)
-                            CharIDs.Add(CharID)
+                            Dim CharID As String = Line.Remove(Line.LastIndexOf("=")).ToLower
+
+                            If LoadAgentChar(CharID, AfterEquals) Then
+                                ControlAxAgent.Characters(CharID).Get("State", "Showing, Hiding, Speaking, Moving, Gesturing, Idling, Hearing, Listening", True)
+                                CharIDs.Add(CharID)
+                            End If
                         ElseIf CurrentParse = "[LanguageIDs]" Then
                             ' Sets the language ID for all of the characters.
-                            ControlAxAgent.Characters(Line.Remove(Line.LastIndexOf("="))).LanguageID = AfterEquals
+                            Dim CharID As String = Line.Remove(Line.LastIndexOf("=")).ToLower
+                            If CharIDs.Contains(CharID) Then
+                                ControlAxAgent.Characters(Line.Remove(Line.LastIndexOf("="))).LanguageID = AfterEquals
+                            End If
                         ElseIf CurrentParse = "[Script]" Then
                             If Line.ToLower.Contains("set req =") Then
                                 ' Sets the current request to the action listed after the equal sign.
@@ -139,7 +145,9 @@ Public Class AgentForm
             ' Gets the ID of the character preforming the request.
             Dim CharID = RequestMatch.Remove(RequestMatch.IndexOf("."))
 
-            If QuotesRegex.IsMatch(Line) Then
+            If Not CharIDs.Contains(CharID) Then
+                Return Nothing
+            ElseIf QuotesRegex.IsMatch(Line) Then
                 ' Regex to determine if the current line contains one or more time function. (Example: GetTimeOfDay())
                 Dim TimeRegex As New Regex("(""\s+&\s+)?[A-Za-z0-9]+\(\)(\s+&\s+"")?")
                 Dim QuotesMatch = QuotesRegex.Match(Line).ToString.Replace("""", "")
@@ -280,6 +288,17 @@ Public Class AgentForm
         End If
     End Function
 
+
+    Private Function LoadAgentChar(ByVal CharID As String, ByVal CharACS As String)
+        Try
+            ControlAxAgent.Characters.Load(CharID, CharACS)
+        Catch ex As Exception
+            Return False
+        End Try
+
+        Return True
+    End Function
+
     ' Gets the time of day. (For Example: Evening)
     Private Function GetTimeOfDay() As String
         If Date.Now.Hour < 12 Then
@@ -305,21 +324,24 @@ Public Class AgentForm
 
     ' Gets the current Date. (For Example: October 28th, 2025)
     Private Function GetDate() As String
-        Dim DayStr As String
-        Dim DayInt = Date.Now.Day
+        Dim DayStr As String = Date.Now.Day
 
-        Select Case DayInt
-            Case 1
-                DayStr = DayInt & "st"
-            Case 2
-                DayStr = DayInt & "nd"
-            Case 3
-                DayStr = DayInt & "rd"
-            Case Else
-                DayStr = DayInt & "th"
-        End Select
+        If DayStr = "11" Or DayStr = "12" Or DayStr = "13" Then
+            DayStr = DayStr & "th"
+        Else
+            Select Case DayStr.Remove(0, DayStr.Length - 1)
+                Case 1
+                    DayStr = DayStr & "st"
+                Case 2
+                    DayStr = DayStr & "nd"
+                Case 3
+                    DayStr = DayStr & "rd"
+                Case Else
+                    DayStr = DayStr & "th"
+            End Select
+        End If
 
-        Return MonthName(Date.Now.Month) & " " & DayStr & ", " & Date.Now.Year
+        Return MonthName(Date.Now.Month) & " " & DayStr.Replace(" ", "") & ", " & Date.Now.Year
     End Function
 
     ' Checks if the current date is the holiday and gets the holiday. (For Example: Christmas)
@@ -419,6 +441,10 @@ Public Class AgentForm
                 WaitFor(HideReq)
             End If
         Next
+
+        If CharIDs.Count < 1 Then
+            Application.Exit()
+        End If
     End Sub
 
     Private Sub ControlAxAgent_RequestComplete(ByVal sender As System.Object, ByVal e As AxAgentObjects._AgentEvents_RequestCompleteEvent) Handles ControlAxAgent.RequestComplete
@@ -458,7 +484,10 @@ Public Class AgentForm
                 If Line.StartsWith("[") Then
                     CurrentParse = Line
                 ElseIf CurrentParse = "[CommandScript:" & CommandName & "]" Then
-                    If Line.ToLower.Contains("set req =") Then
+                    If Line.ToLower.Contains("propertysheet.visible = true") Then
+                        ' Shows the Advanced Character Options window.
+                        ControlAxAgent.PropertySheet.Visible = True
+                    ElseIf Line.ToLower.Contains("set req =") Then
                         ' Sets the current request to the action listed after the equal sign.
                         Req = GetActionFromLine(Line)
                     ElseIf Line.ToLower = "waitfor req" Then
