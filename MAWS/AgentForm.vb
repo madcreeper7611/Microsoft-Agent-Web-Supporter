@@ -35,7 +35,7 @@ Public Class AgentForm
         End If
     End Sub
 
-    ' Extremely useful to prevent agents from speaking/thinking/playing actions at the same time and giving things time to load.
+    ' Extremely useful to prevent agents from speaking/thinking/playing at the same time and giving things time to load.
     Private Sub WaitFor(ByVal Request)
         On Error Resume Next
         For Each Agent As IAgentCtlCharacter In ControlAxAgent.Characters
@@ -134,12 +134,14 @@ Public Class AgentForm
         ' Regexes for determining categories of requests and if the specific line is a request.
 
         ' Regex for determining if the line is a request. (Example: Merlin.Speak)
-        Dim RequestRegex As New Regex("[A-Za-z0-9]+\.[A-Za-z0-9]+")
+        Dim RequestRegex As New Regex("[A-Za-z0-9]+\.[A-Za-z0-9]+(\.[A-Za-z0-9]+)?")
         ' Regex for determining if the line contains quotes. (Examples: "Welcome to the Microsoft Agent Web Supporter!", or "Greet")
         Dim QuotesRegex As New Regex("(("")?[A-Za-z0-9]+\(\)\s+&\s+)?""(?:[^""]|"""")*""(\s+&\s+[A-Za-z0-9]+\(\)""?(\s+&\s+)?)?")
+        ' Regex for determining if the request is setting a characters balloon style. (Example: &H21C000F)
+        Dim BalloonStyleRegex As New Regex("&([A-Za-z]+([0-9]+[A-Za-z]+)+)")
         ' Regex for determining if the line is a point on the screen (Examples: MerlinRightX MerlinBottomY, or 300, 240")
         Dim PointRegex As New Regex("[a-zA-Z0-9]+, [a-zA-Z0-9]+")
-        ' Regex for determining if the line is a single integer (Example: 128")
+        ' Regex for determining if the line is a single integer (Example: 128)
         Dim IntRegex As New Regex("[0-9]+")
 
         ' Determines if the line is a request.
@@ -201,8 +203,18 @@ Public Class AgentForm
                         Return ControlAxAgent.Characters(CharID).Think(SpeakString)
                     End If
                     Return Nothing
+                ElseIf RequestMatch.Contains(".balloon") Then
+                    ' Gets the subrequest inside of the main request.
+                    If RequestMatch.Contains(".balloon.font") Then
+                        ' Sets the font to the name of the font set by the subrequest.
+                        ControlAxAgent.Characters(CharID).Balloon.FontName = QuotesMatch
+                        Return Nothing
+                    End If
                 End If
 
+                Return Nothing
+            ElseIf BalloonStyleRegex.IsMatch(Line) Then
+                ControlAxAgent.Characters(CharID).Balloon.Style = BalloonStyleRegex.Match(Line).ToString
                 Return Nothing
             ElseIf PointRegex.IsMatch(Line) Then
                 Dim PointMatch As String = PointRegex.Match(Line).ToString
@@ -263,11 +275,13 @@ Public Class AgentForm
             ElseIf IntRegex.IsMatch(Line) Then
                 Dim IntMatch As Integer = Convert.ToInt16(IntRegex.Match(Line).ToString)
 
-                ' Sets the width height of the character depending on the declaration.
+                ' Sets the width, height, or font size of the character depending on the declaration.
                 If RequestMatch.Contains(".width") Then
                     ControlAxAgent.Characters(CharID).Width = IntMatch
                 ElseIf RequestMatch.Contains(".height") Then
                     ControlAxAgent.Characters(CharID).Height = IntMatch
+                ElseIf RequestMatch.Contains(".balloon.fontsize") Then
+                    ControlAxAgent.Characters(CharID).Balloon.FontSize = IntMatch
                 End If
 
                 Return Nothing
