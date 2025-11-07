@@ -152,7 +152,7 @@ Public Class AgentForm
         ' Regex for determining if the line is a point on the screen (Examples: MerlinRightX MerlinBottomY, or 300, 240")
         Dim PointRegex As New Regex("[a-zA-Z0-9]+, [a-zA-Z0-9]+")
         ' Regex for determining if the line is a single integer (Example: 128)
-        Dim IntRegex As New Regex("[0-9]+")
+        Dim IntRegex As New Regex("-?[0-9]+")
 
         ' Determines if the line is a request.
         If RequestRegex.IsMatch(Line) Then
@@ -553,4 +553,5 @@ Public Class AgentForm
             Next
         End If
     End Sub
+
 End Class
