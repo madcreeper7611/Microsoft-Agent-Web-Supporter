@@ -28,6 +28,7 @@ Partial Class AgentForm
         Me.MAWSNotifyIcon = New System.Windows.Forms.NotifyIcon(Me.components)
         Me.TrayCMS = New System.Windows.Forms.ContextMenuStrip(Me.components)
         Me.ExitTSMI = New System.Windows.Forms.ToolStripMenuItem
+        Me.HideCharsTimer = New System.Windows.Forms.Timer(Me.components)
         CType(Me.ControlAxAgent, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.TrayCMS.SuspendLayout()
         Me.SuspendLayout()
@@ -60,6 +61,10 @@ Partial Class AgentForm
         Me.ExitTSMI.Size = New System.Drawing.Size(92, 22)
         Me.ExitTSMI.Text = "Exit"
         '
+        'HideCharsTimer
+        '
+        Me.HideCharsTimer.Interval = 1000
+        '
         'AgentForm
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
@@ -85,4 +90,5 @@ Partial Class AgentForm
     Friend WithEvents MAWSNotifyIcon As System.Windows.Forms.NotifyIcon
     Friend WithEvents TrayCMS As System.Windows.Forms.ContextMenuStrip
     Friend WithEvents ExitTSMI As System.Windows.Forms.ToolStripMenuItem
+    Friend WithEvents HideCharsTimer As System.Windows.Forms.Timer
 End Class

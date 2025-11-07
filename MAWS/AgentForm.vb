@@ -9,7 +9,7 @@ Public Class AgentForm
     Public ScriptURL As String = Command()
     ' Contains the IDs of each character in the script.
     Dim CharIDs As New List(Of String)
-    ' Hide Requests to make sure each agent is hidden before the program closes.
+    ' Load Request to make sure each character is loaded before the script runs.
     Dim HideReq As IAgentCtlRequest
     ' The amount of commands that each character has.
     Dim CommandsCount As Integer
@@ -62,6 +62,8 @@ Public Class AgentForm
         Try
             ' Downloads the data from the URL of the MSH script.
             ScriptText = client.DownloadString(ScriptURL)
+            MAWSNotifyIcon.BalloonTipIcon = ToolTipIcon.None
+            MAWSNotifyIcon.BalloonTipText = Nothing
 
             For Each RL In ScriptText.Split(Chr(10))
                 ' Removes unnecessary characters from the line like spaces that come after the line.
@@ -81,12 +83,14 @@ Public Class AgentForm
                             If LoadAgentChar(CharID, AfterEquals) Then
                                 ControlAxAgent.Characters(CharID).Get("State", "Showing, Hiding, Speaking, Moving, Gesturing, Idling, Hearing, Listening", True)
                                 CharIDs.Add(CharID)
+                                Wait(100)
                             End If
                         ElseIf CurrentParse = "[LanguageIDs]" Then
                             ' Sets the language ID for all of the characters.
                             Dim CharID As String = Line.Remove(Line.LastIndexOf("=")).ToLower
                             If CharIDs.Contains(CharID) Then
-                                ControlAxAgent.Characters(Line.Remove(Line.LastIndexOf("="))).LanguageID = AfterEquals
+                                Req = ControlAxAgent.Characters(Line.Remove(Line.LastIndexOf("="))).LanguageID = AfterEquals
+                                WaitFor(Req)
                             End If
                         ElseIf CurrentParse = "[Script]" Then
                             If Line.ToLower.Contains("set req =") Then
@@ -115,12 +119,18 @@ Public Class AgentForm
                 End If
             Next
 
+            For Each CharID In CharIDs
+                Dim AgentChar = ControlAxAgent.Characters(CharID)
+
+                AgentChar.Commands.Add("CLOSE", "Close", "Close")
+            Next
+
             If CharIDs.Count < 1 Then
                 ' Exits the program if the script has 0 loaded characters.
                 Application.Exit()
-            ElseIf CommandsCount < 2 Then
+            ElseIf CommandsCount < 3 Then
                 ' Hides every character at the end of a script if the script has less than 2 commands.
-                HideAllCharacters()
+                HideCharsTimer.Start()
             End If
         Catch ex As Exception
             MessageBox.Show("There was an error while loading the script:" & ex.Message)
@@ -185,7 +195,8 @@ Public Class AgentForm
 
                 If RequestMatch.Contains(".ttsmodeid") Then
                     ' Sets the TTS Voice of the character if it's a TTSModeID Declaration
-                    ControlAxAgent.Characters(CharID).TTSModeID = QuotesMatch
+                    Req = ControlAxAgent.Characters(CharID).TTSModeID = QuotesMatch
+                    WaitFor(Req)
                     Return Nothing
                 ElseIf RequestMatch.Contains(".play") Then
                     ' Makes the character play an animation.
@@ -218,10 +229,13 @@ Public Class AgentForm
                 Return Nothing
             ElseIf PointRegex.IsMatch(Line) Then
                 Dim PointMatch As String = PointRegex.Match(Line).ToString
+                ' Character Height and Width
+                Dim CharWidth = ControlAxAgent.Characters(CharID).Width
+                Dim CharHeight = ControlAxAgent.Characters(CharID).Height
                 ' Screen Locations
-                Dim ScreenBottom As Integer = Screen.PrimaryScreen.Bounds.Bottom - ControlAxAgent.Characters(CharID).Height
+                Dim ScreenBottom As Integer = Screen.PrimaryScreen.Bounds.Bottom
                 Dim ScreenLeft As Integer = Screen.PrimaryScreen.Bounds.Left
-                Dim ScreenRight As Integer = Screen.PrimaryScreen.Bounds.Right - ControlAxAgent.Characters(CharID).Width
+                Dim ScreenRight As Integer = Screen.PrimaryScreen.Bounds.Right
                 Dim ScreenTop As Integer = Screen.PrimaryScreen.Bounds.Top
                 ' Get's the X and Y location that the character is supposed to move to or gesture at. (Can be a string replacement like BottomX, or an integer like 300)
                 Dim LocationX As String = PointMatch.Remove(PointMatch.IndexOf(","))
@@ -232,15 +246,15 @@ Public Class AgentForm
 
                 ' Replacement values for X.
                 If LocationX.ToLower.Contains("leftcenter") Then
-                    PointX = ScreenRight / 4
+                    PointX = (ScreenRight / 4) - (CharWidth / 2)
                 ElseIf LocationX.ToLower.Contains("rightcenter") Then
-                    PointX = (ScreenRight / 4) * 3
+                    PointX = ((ScreenRight / 4) * 3) - (CharWidth / 2)
                 ElseIf LocationX.ToLower.Contains("left") Then
                     PointX = ScreenLeft
                 ElseIf LocationX.ToLower.Contains("center") Then
-                    PointX = ScreenRight / 2
+                    PointX = (ScreenRight / 2) - (CharWidth / 2)
                 ElseIf LocationX.ToLower.Contains("right") Then
-                    PointX = ScreenRight
+                    PointX = ScreenRight - CharWidth
                 ElseIf IntRegex.IsMatch(LocationX) Then
                     PointX = Convert.ToInt32(IntRegex.Match(LocationX).ToString)
                 Else
@@ -249,15 +263,15 @@ Public Class AgentForm
 
                 ' Replacement values for Y.
                 If LocationY.ToLower.Contains("topcenter") Then
-                    PointX = ScreenBottom / 4
+                    PointY = (ScreenBottom / 4) - (CharHeight / 2)
                 ElseIf LocationY.ToLower.Contains("bottomcenter") Then
-                    PointX = (ScreenBottom / 4) * 3
+                    PointY = ((ScreenBottom / 4) * 3) - (CharHeight / 2)
                 ElseIf LocationY.ToLower.Contains("top") Then
                     PointY = ScreenTop
                 ElseIf LocationY.ToLower.Contains("center") Then
-                    PointY = ScreenBottom / 2
+                    PointY = (ScreenBottom / 2) - (CharHeight / 2)
                 ElseIf LocationY.ToLower.Contains("bottom") Then
-                    PointY = ScreenBottom
+                    PointY = ScreenBottom - CharHeight
                 ElseIf IntRegex.IsMatch(LocationY) Then
                     PointY = Convert.ToInt32(IntRegex.Match(LocationY).ToString)
                 Else
@@ -300,11 +314,22 @@ Public Class AgentForm
             End If
 
             Return Nothing
-        Else
-            Return Nothing
-        End If
+            Else
+                Return Nothing
+            End If
     End Function
 
+    ' Source - https://stackoverflow.com/questions/15857893/wait-5-seconds-before-continuing-code-vb-net
+    ' Original Posted by Ali
+    ' Retrieved 11/5/2025, License - CC BY-SA 4.0
+
+    ' Wait request for giving the program time to load the characters
+    Private Sub Wait(ByVal Miliseconds As Integer)
+        For i As Integer = 0 To Miliseconds
+            System.Threading.Thread.Sleep(10)
+            Application.DoEvents()
+        Next
+    End Sub
 
     Private Function LoadAgentChar(ByVal CharID As String, ByVal CharACS As String)
         Try
@@ -446,10 +471,15 @@ Public Class AgentForm
         End If
     End Sub
 
+    ' Delays the HideAllCharacters function by 1 second to prevent errors from it running as the same time as the characters loading.
+    Private Sub HideCharsTimer_Tick(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles HideCharsTimer.Tick
+        HideAllCharacters()
+        HideCharsTimer.Dispose()
+    End Sub
+
     ' Hides every character visible.
     Private Sub HideAllCharacters()
-        For i = 0 To CharIDs.Count - 1
-            Dim CharID = CharIDs(i)
+        For Each CharID In CharIDs
             Dim AgentChar = ControlAxAgent.Characters(CharID)
 
             ' Checks if the character is visible or has other clients active.
@@ -487,31 +517,40 @@ Public Class AgentForm
         Dim CommandName As String = e.userInput.name
         Dim CurrentParse As String
 
-        For Each RL In ScriptText.Split(Chr(10))
-            ' Removes unnecessary characters from the line like spaces that come after the line.
-            Dim Line = RL.Trim
+        ' Closes the program if the command has the name of Close.
+        If CommandName = "CLOSE" Then
+            For Each CharID In CharIDs
+                ControlAxAgent.Characters(CharID).StopAll()
+            Next
 
-            If Not Line = String.Empty Then
-                ' Checks if the line is a list declaration, if it is, set it as the current parse.
-                ' If the line isn't declaring a list, it checks to make sure the current parse is a commandscript for the selected command.
-                If Line.StartsWith("[") Then
-                    CurrentParse = Line
-                ElseIf CurrentParse = "[CommandScript:" & CommandName & "]" Then
-                    If Line.ToLower.Contains("propertysheet.visible = true") Then
-                        ' Shows the Advanced Character Options window.
-                        ControlAxAgent.PropertySheet.Visible = True
-                    ElseIf Line.ToLower.Contains("set req =") Then
-                        ' Sets the current request to the action listed after the equal sign.
-                        Req = GetActionFromLine(Line)
-                    ElseIf Line.ToLower = "waitfor req" Then
-                        ' Has the program wait for a specific request before running the next line.
-                        WaitFor(Req)
-                    Else
-                        ' Causes a specific character to do an action from the line.
-                        GetActionFromLine(Line)
+            HideAllCharacters()
+        Else
+            For Each RL In ScriptText.Split(Chr(10))
+                ' Removes unnecessary characters from the line like spaces that come after the line.
+                Dim Line = RL.Trim
+
+                If Not Line = String.Empty Then
+                    ' Checks if the line is a list declaration, if it is, set it as the current parse.
+                    ' If the line isn't declaring a list, it checks to make sure the current parse is a commandscript for the selected command.
+                    If Line.StartsWith("[") Then
+                        CurrentParse = Line
+                    ElseIf CurrentParse = "[CommandScript:" & CommandName & "]" Then
+                        If Line.ToLower.Contains("propertysheet.visible = true") Then
+                            ' Shows the Advanced Character Options window.
+                            ControlAxAgent.PropertySheet.Visible = True
+                        ElseIf Line.ToLower.Contains("set req =") Then
+                            ' Sets the current request to the action listed after the equal sign.
+                            Req = GetActionFromLine(Line)
+                        ElseIf Line.ToLower = "waitfor req" Then
+                            ' Has the program wait for a specific request before running the next line.
+                            WaitFor(Req)
+                        Else
+                            ' Causes a specific character to do an action from the line.
+                            GetActionFromLine(Line)
+                        End If
                     End If
                 End If
-            End If
-        Next
+            Next
+        End If
     End Sub
 End Class

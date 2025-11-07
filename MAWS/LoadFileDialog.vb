@@ -7,6 +7,8 @@ Public Class LoadFileDialog
 
     Private Sub OKOpenButtonClick(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles OKOpenButton.Click
         If MSHFileRegex.IsMatch(FileURLTextBox.Text) Then
+            AgentForm.MAWSNotifyIcon.BalloonTipText = "Loading MASH Script..."
+            AgentForm.MAWSNotifyIcon.BalloonTipIcon = ToolTipIcon.Info
             AgentForm.ScriptURL = FileURLTextBox.Text
             AgentForm.ReadScript()
             Me.Close()
