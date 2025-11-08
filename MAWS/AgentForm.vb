@@ -150,7 +150,7 @@ Public Class AgentForm
         ' Regex for determining if the request is setting a characters balloon style. (Example: &H21C000F)
         Dim BalloonStyleRegex As New Regex("&([A-Za-z]+([0-9]+[A-Za-z]+)+)")
         ' Regex for determining if the line is a point on the screen (Examples: MerlinRightX MerlinBottomY, or 300, 240")
-        Dim PointRegex As New Regex("[a-zA-Z0-9]+, [a-zA-Z0-9]+")
+        Dim PointRegex As New Regex("-?[a-zA-Z0-9]+, -?[a-zA-Z0-9]+")
         ' Regex for determining if the line is a single integer (Example: 128)
         Dim IntRegex As New Regex("-?[0-9]+")
 
@@ -553,5 +553,4 @@ Public Class AgentForm
             Next
         End If
     End Sub
-
 End Class
