@@ -145,6 +145,8 @@ Public Class AgentForm
 
         ' Regex for determining if the line is a request. (Example: Merlin.Speak)
         Dim RequestRegex As New Regex("[A-Za-z0-9]+\.[A-Za-z0-9]+(\.[A-Za-z0-9]+)?")
+        ' Regex for determining if the line makes the character speak audio. (Example: "Example Sound", "https://example.com/example.wav")
+        Dim AudioRegex As New Regex("""(?:[^""]|"""")*"",(\s+)?""(?:[^""]|"""")*""")
         ' Regex for determining if the line contains quotes. (Examples: "Welcome to the Microsoft Agent Web Supporter!", or "Greet")
         Dim QuotesRegex As New Regex("(("")?[A-Za-z0-9]+\(\)\s+&\s+)?""(?:[^""]|"""")*""(\s+&\s+[A-Za-z0-9]+\(\)""?(\s+&\s+)?)?")
         ' Regex for determining if the request is setting a characters balloon style. (Example: &H21C000F)
@@ -205,7 +207,20 @@ Public Class AgentForm
                 ElseIf RequestMatch.Contains(".speak") Then
                     ' Makes the character speak the current speakstring.
                     If Not SpeakString = Nothing Then
-                        Return ControlAxAgent.Characters(CharID).Speak(SpeakString)
+                        ' Determine if the line is having the character speak an audio.
+                        If AudioRegex.IsMatch(Line) Then
+                            Dim AudioMatch As String = AudioRegex.Match(Line).ToString
+
+                            Dim AudioText As String = AudioMatch.Substring(1, AudioMatch.IndexOf(",") - 2)
+                            Dim AudioLink As String = AudioMatch.Substring(AudioMatch.IndexOf(",") + 1).Trim
+                            AudioLink = AudioLink.Substring(1, AudioLink.Length - 2)
+
+                            Return ControlAxAgent.Characters(CharID).Speak(AudioText, AudioLink)
+                        Else
+                            Return ControlAxAgent.Characters(CharID).Speak(SpeakString)
+                        End If
+
+                        Return Nothing
                     End If
                     Return Nothing
                 ElseIf RequestMatch.Contains(".think") Then
@@ -314,9 +329,9 @@ Public Class AgentForm
             End If
 
             Return Nothing
-            Else
-                Return Nothing
-            End If
+        Else
+            Return Nothing
+        End If
     End Function
 
     ' Source - https://stackoverflow.com/questions/15857893/wait-5-seconds-before-continuing-code-vb-net
