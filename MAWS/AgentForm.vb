@@ -2,6 +2,7 @@
 Imports System.Net
 Imports System.Text
 Imports AgentObjects
+Imports VB = Microsoft.VisualBasic
 Imports System.Text.RegularExpressions
 
 Public Class AgentForm
@@ -83,7 +84,7 @@ Public Class AgentForm
                             If LoadAgentChar(CharID, AfterEquals) Then
                                 ControlAxAgent.Characters(CharID).Get("State", "Showing, Hiding, Speaking, Moving, Gesturing, Idling, Hearing, Listening", True)
                                 CharIDs.Add(CharID)
-                                Wait(100)
+                                MAWS_Wait(3)
                             End If
                         ElseIf CurrentParse = "[LanguageIDs]" Then
                             ' Sets the language ID for all of the characters.
@@ -339,11 +340,12 @@ Public Class AgentForm
     ' Retrieved 11/5/2025, License - CC BY-SA 4.0
 
     ' Wait request for giving the program time to load the characters
-    Private Sub Wait(ByVal Miliseconds As Integer)
-        For i As Integer = 0 To Miliseconds
-            System.Threading.Thread.Sleep(10)
+    Private Sub MAWS_Wait(ByVal Seconds As Integer)
+        Dim Start
+        Start = VB.Timer()
+        Do While VB.Timer() < Start + Seconds
             Application.DoEvents()
-        Next
+        Loop
     End Sub
 
     Private Function LoadAgentChar(ByVal CharID As String, ByVal CharACS As String)
