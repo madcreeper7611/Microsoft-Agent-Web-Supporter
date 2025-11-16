@@ -80,7 +80,7 @@ Partial Class AgentForm
         Me.Opacity = 0
         Me.ShowIcon = False
         Me.ShowInTaskbar = False
-        Me.Text = "Microsoft Agent Web Support"
+        Me.Text = "Microsoft Agent Web Supporter"
         CType(Me.ControlAxAgent, System.ComponentModel.ISupportInitialize).EndInit()
         Me.TrayCMS.ResumeLayout(False)
         Me.ResumeLayout(False)
