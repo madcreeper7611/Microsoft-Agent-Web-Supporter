@@ -17,3 +17,5 @@ You can embed maws into your websites by
 - Windows 98, 2000, ME, XP, Vista, 7, 8, 8.1, 10, 11
 - Sound Card.
 - .NET Framework 2.0
+
+Scanned with [Triage](https://tria.ge/251116-c6axsswjbx)!
