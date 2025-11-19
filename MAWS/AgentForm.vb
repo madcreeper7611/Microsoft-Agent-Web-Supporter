@@ -14,6 +14,8 @@ Public Class AgentForm
     Dim HideReq As IAgentCtlRequest
     ' The amount of commands that each character has.
     Dim CommandsCount As Integer
+    ' Determines if the 3 second wait is over
+    Dim WaitFinished As Boolean
     ' The client needed for downloading the data in the script.
     Dim client As New WebClient
     ' The text contained in the script.
@@ -84,7 +86,6 @@ Public Class AgentForm
                             If LoadAgentChar(CharID, AfterEquals) Then
                                 ControlAxAgent.Characters(CharID).Get("State", "Showing, Hiding, Speaking, Moving, Gesturing, Idling, Hearing, Listening", True)
                                 CharIDs.Add(CharID)
-                                MAWS_Wait(3)
                             End If
                         ElseIf CurrentParse = "[LanguageIDs]" Then
                             ' Sets the language ID for all of the characters.
@@ -94,6 +95,10 @@ Public Class AgentForm
                                 WaitFor(Req)
                             End If
                         ElseIf CurrentParse = "[Script]" Then
+                            If Not WaitFinished Then
+                                WaitForLoad(3)
+                                WaitFinished = True
+                            End If
                             If Line.ToLower.Contains("set req =") Then
                                 ' Sets the current request to the action listed after the equal sign.
                                 Req = GetActionFromLine(Line)
@@ -340,7 +345,7 @@ Public Class AgentForm
     ' Retrieved 11/5/2025, License - CC BY-SA 4.0
 
     ' Wait request for giving the program time to load the characters
-    Private Sub MAWS_Wait(ByVal Seconds As Integer)
+    Private Sub WaitForLoad(ByVal Seconds As Integer)
         Dim Start
         Start = VB.Timer()
         Do While VB.Timer() < Start + Seconds
