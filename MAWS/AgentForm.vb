@@ -17,7 +17,7 @@ Public Class AgentForm
     ' Determines if the 3 second wait is over
     Dim WaitFinished As Boolean
     ' The client needed for downloading the data in the script.
-    Dim client As New WebClient
+    Dim Client As New WebClient
     ' The text contained in the script.
     Dim ScriptText As String
     ' Variable for making requests
@@ -47,6 +47,9 @@ Public Class AgentForm
     End Sub
 
     Public Sub ReadScript()
+        If Environment.OSVersion.Version.Build >= 6002 Then
+            ServicePointManager.SecurityProtocol = 3072
+        End If
         ' Set's the group that new values will be loaded in.
         ' For example: If the current parse is [Characters] then it will start adding Characters to the group.
         Dim CurrentParse As String
@@ -64,7 +67,7 @@ Public Class AgentForm
 
         Try
             ' Downloads the data from the URL of the MSH script.
-            ScriptText = client.DownloadString(ScriptURL)
+            ScriptText = Client.DownloadString(ScriptURL)
             MAWSNotifyIcon.BalloonTipIcon = ToolTipIcon.None
             MAWSNotifyIcon.BalloonTipText = Nothing
 
@@ -139,7 +142,7 @@ Public Class AgentForm
                 HideCharsTimer.Start()
             End If
         Catch ex As Exception
-            MessageBox.Show("There was an error while loading the script:" & ex.Message)
+            MessageBox.Show("There was an error while loading the script: " & ex.Message)
             Close()
         End Try
     End Sub
@@ -560,7 +563,7 @@ Public Class AgentForm
                         If Line.ToLower.Contains("propertysheet.visible = true") Then
                             ' Shows the Advanced Character Options window.
                             ControlAxAgent.PropertySheet.Visible = True
-                        ElseIf Line.ToLower.Contains("set req =") Then
+                        ElseIf Line.ToLower.Contains("set req") Then
                             ' Sets the current request to the action listed after the equal sign.
                             Req = GetActionFromLine(Line)
                         ElseIf Line.ToLower = "waitfor req" Then
