@@ -511,6 +511,9 @@ Public Class AgentForm
             If Not AgentChar.HasOtherClients And AgentChar.Active Then
                 HideReq = AgentChar.Hide
                 WaitFor(HideReq)
+            ElseIf AgentChar.HasOtherClients Then
+                HideReq = AgentChar.Play("RestPose")
+                WaitFor(HideReq)
             End If
         Next
     End Sub
@@ -524,9 +527,9 @@ Public Class AgentForm
                 Dim AgentChar = ControlAxAgent.Characters(CharID)
 
                 ' Checks to see if each character is visible before the app closes. If they're not, unloads them and increments the UnloadedChars by 1.
-                If AgentChar.Visible = False Then
+                If AgentChar.Visible = False Or AgentChar.HasOtherClients Then
                     ControlAxAgent.Characters.Unload(CharID)
-                    UnloadedChars = UnloadedChars + 1
+                    UnloadedChars += 1
                 End If
 
                 ' Closes the app if the amount of characters hidden is equal to the amount of character IDs in the script.
