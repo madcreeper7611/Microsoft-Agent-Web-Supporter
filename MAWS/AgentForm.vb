@@ -75,7 +75,7 @@ Public Class AgentForm
                 ' Removes unnecessary characters from the line like spaces that come after the line.
                 Dim Line = RL.Trim
                 If Not Line = String.Empty Then
-                    ' Checks if the line is a list declaration, if it is, set it as the current parse.
+                    ' Checks if the line is a list declaration. If it is, set it as the current parse.
                     If RL.StartsWith("[") Then
                         CurrentParse = Line
                     Else
@@ -152,21 +152,23 @@ Public Class AgentForm
     Private Function GetActionFromLine(ByVal Line As String)
         ' Regexes for determining categories of requests and if the specific line is a request.
 
-        ' Regex for determining if the line is a request. (Example: Merlin.Speak)
-        Dim RequestRegex As New Regex("[A-Za-z0-9]+\.[A-Za-z0-9]+(\.[A-Za-z0-9]+)?")
-        ' Regex for determining if the line makes the character speak audio. (Example: "Example Sound", "https://example.com/example.wav")
+        ' Regex for determining if the line is a character request (Example: Merlin.Speak).
+        Dim RequestRegex As New Regex("(?<!(.[^\s]))[A-Za-z0-9]+\.[A-Za-z0-9]+(\.[A-Za-z0-9]+)?")
+        ' Regex for determining if the line makes the character speak audio (Example: "Example Sound", "https://example.com/example.wav").
         Dim AudioRegex As New Regex("""(?:[^""]|"""")*"",(\s+)?""(?:[^""]|"""")*""")
-        ' Regex for determining if the line contains quotes. (Examples: "Welcome to the Microsoft Agent Web Supporter!", or "Greet")
+        ' Regex for determining if the line contains quotes (Examples: "Welcome to the Microsoft Agent Web Supporter!", or "Greet")
         Dim QuotesRegex As New Regex("(("")?[A-Za-z0-9]+\(\)\s+&\s+)?""(?:[^""]|"""")*""(\s+&\s+[A-Za-z0-9]+\(\)""?(\s+&\s+)?)?")
-        ' Regex for determining if the request is setting a characters balloon style. (Example: &H21C000F)
+        ' Regex for determining if the request is setting a character's balloon style (Example: &H21C000F).
         Dim BalloonStyleRegex As New Regex("&([A-Za-z]+([0-9]+[A-Za-z]+)+)")
-        ' Regex for determining if the line is a point on the screen (Examples: MerlinRightX MerlinBottomY, or 300, 240")
+        ' Regex for determining if the line is a point on the screen (Examples: MerlinRightX MerlinBottomY, or 300, 240").
         Dim PointRegex As New Regex("-?[a-zA-Z0-9]+, -?[a-zA-Z0-9]+")
-        ' Regex for determining if the line is a single integer (Example: 128)
+        ' Regex for determining if the line is a single integer (Example: 128).
         Dim IntRegex As New Regex("-?[0-9]+")
+        ' Regex for blacklisting files that can have malware embedded within them.
+        Dim BlacklistedFilesRegex As New Regex("[A-Za-z0-9]+\.(exe|scr|com|docm|xlsm|pptm|dotm|xltm|potm|bat|cmd|js|jse|vbs|vbe|wsf|wsh|sct|ps1|psm1|lnk|jar)(\s+(.+)?)?$")
 
         ' Determines if the line is a request.
-        If RequestRegex.IsMatch(Line) Then
+        If RequestRegex.IsMatch(Line) And Not Line.ToLower.Contains("propertysheet.visible") Then
             Dim RequestMatch = RequestRegex.Match(Line).ToString.ToLower
             ' Gets the ID of the character preforming the request.
             Dim CharID = RequestMatch.Remove(RequestMatch.IndexOf("."))
@@ -205,7 +207,7 @@ Public Class AgentForm
                 SpeakString = SpeakString.Substring(1, SpeakString.Length - 2).Replace("""""", """")
 
                 If RequestMatch.Contains(".ttsmodeid") Then
-                    ' Sets the TTS Voice of the character if it's a TTSModeID Declaration
+                    ' Sets the TTS Voice of the character if it's a TTSModeID declaration.
                     Req = ControlAxAgent.Characters(CharID).TTSModeID = QuotesMatch
                     WaitFor(Req)
                     Return Nothing
@@ -253,15 +255,15 @@ Public Class AgentForm
                 Return Nothing
             ElseIf PointRegex.IsMatch(Line) Then
                 Dim PointMatch As String = PointRegex.Match(Line).ToString
-                ' Character Height and Width
+                ' Character Height and Width.
                 Dim CharWidth = ControlAxAgent.Characters(CharID).Width
                 Dim CharHeight = ControlAxAgent.Characters(CharID).Height
-                ' Screen Locations
+                ' Screen Locations.
                 Dim ScreenBottom As Integer = Screen.PrimaryScreen.Bounds.Bottom
                 Dim ScreenLeft As Integer = Screen.PrimaryScreen.Bounds.Left
                 Dim ScreenRight As Integer = Screen.PrimaryScreen.Bounds.Right
                 Dim ScreenTop As Integer = Screen.PrimaryScreen.Bounds.Top
-                ' Get's the X and Y location that the character is supposed to move to or gesture at. (Can be a string replacement like BottomX, or an integer like 300)
+                ' Get's the X and Y location that the character is supposed to move to or gesture at (Can either be a string replacement like BottomX, or an integer like 300).
                 Dim LocationX As String = PointMatch.Remove(PointMatch.IndexOf(","))
                 Dim LocationY As String = PointMatch.Substring(PointMatch.IndexOf(",") + 1)
                 ' Actual X and Y position on screen that the character is meant to move to or gesture at.
@@ -327,7 +329,7 @@ Public Class AgentForm
                 ' Shows the character if it's a show request.
                 Return ControlAxAgent.Characters(CharID).Show()
             ElseIf RequestMatch.Contains(".hide") Then
-                ' Hides the character if it's a show request. (Not to be confused with HideReq)
+                ' Hides the character if it's a show request (Not to be confused with HideReq).
                 Return ControlAxAgent.Characters(CharID).Hide()
             ElseIf RequestMatch.Contains(".stop") Then
                 ' Stops the current requests of the character if it's a stop request.
@@ -335,6 +337,23 @@ Public Class AgentForm
             ElseIf RequestMatch.Contains(".stopall") Then
                 ' Stops every request of the character if it's a stopall request.
                 ControlAxAgent.Characters(CharID).StopAll()
+            End If
+        ElseIf Line.ToLower.Contains("propertysheet.visible") Then
+            ' Shows the advanced properties window.
+            If Line.ToLower.Contains("true") Then
+                Return ControlAxAgent.PropertySheet.Visible = True
+            Else
+                Return ControlAxAgent.PropertySheet.Visible = False
+            End If
+        ElseIf Line.ToLower.StartsWith("shellex") Then
+            If QuotesRegex.IsMatch(Line) Then
+                Dim QuotesMatch = QuotesRegex.Match(Line).ToString.Replace("""", "")
+
+                If BlacklistedFilesRegex.IsMatch(QuotesMatch) Then
+                    Return MessageBox.Show("Error: Unable to load the specified file due to it using a blacklisted file type.")
+                Else
+                    Return Process.Start(QuotesMatch)
+                End If
             End If
 
             Return Nothing
@@ -466,7 +485,7 @@ Public Class AgentForm
     Private Sub TrayCMS_Opening(ByVal sender As System.Object, ByVal e As System.ComponentModel.CancelEventArgs) Handles TrayCMS.Opening
         TrayCMS.Items.Clear()
 
-        ' Gets each character ID in the CharIDs list
+        ' Gets each character ID in the CharIDs list.
         For Each CharID As String In CharIDs
             ' Checks if the character is currently visible then adds the option to show/hide the character.
             If ControlAxAgent.Characters(CharID).Visible Then
@@ -558,15 +577,12 @@ Public Class AgentForm
                 Dim Line = RL.Trim
 
                 If Not Line = String.Empty Then
-                    ' Checks if the line is a list declaration, if it is, set it as the current parse.
+                    ' Checks if the line is a list declaration. If it is, set it as the current parse.
                     ' If the line isn't declaring a list, it checks to make sure the current parse is a commandscript for the selected command.
                     If Line.StartsWith("[") Then
                         CurrentParse = Line
                     ElseIf CurrentParse = "[CommandScript:" & CommandName & "]" Then
-                        If Line.ToLower.Contains("propertysheet.visible = true") Then
-                            ' Shows the Advanced Character Options window.
-                            ControlAxAgent.PropertySheet.Visible = True
-                        ElseIf Line.ToLower.Contains("set req") Then
+                        If Line.ToLower.Contains("set req") Then
                             ' Sets the current request to the action listed after the equal sign.
                             Req = GetActionFromLine(Line)
                         ElseIf Line.ToLower = "waitfor req" Then
@@ -580,5 +596,33 @@ Public Class AgentForm
                 End If
             Next
         End If
+    End Sub
+
+    Private Sub ControlAxAgent_Bookmark(ByVal sender As System.Object, ByVal e As AxAgentObjects._AgentEvents_BookmarkEvent) Handles ControlAxAgent.Bookmark
+        Dim CurrentParse As String
+
+        For Each RL In ScriptText.Split(Chr(10))
+            ' Removes unnecessary characters from the line like spaces that come after the line.
+            Dim Line = RL.Trim
+
+            If Not Line = String.Empty Then
+                ' Checks if the line is a list declaration. If it is, set it as the current parse.
+                ' If the line isn't declaring a list, it checks to make sure the current parse is a bookmarkscript for the selected command.
+                If Line.StartsWith("[") Then
+                    CurrentParse = Line
+                ElseIf CurrentParse = "[BookmarkScript:" & e.bookmarkID & "]" Then
+                    If Line.ToLower.Contains("set req") Then
+                        ' Sets the current request to the action listed after the equal sign.
+                        Req = GetActionFromLine(Line)
+                    ElseIf Line.ToLower = "waitfor req" Then
+                        ' Has the program wait for a specific request before running the next line.
+                        WaitFor(Req)
+                    Else
+                        ' Causes a specific character to do an action from the line.
+                        GetActionFromLine(Line)
+                    End If
+                End If
+            End If
+        Next
     End Sub
 End Class

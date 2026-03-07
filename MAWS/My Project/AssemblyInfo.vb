@@ -12,7 +12,7 @@ Imports System.Runtime.InteropServices
 <Assembly: AssemblyDescription("Allows Microsoft Agent characters to be loaded on modern web browsers.")> 
 <Assembly: AssemblyCompany("TMAFE.COM")> 
 <Assembly: AssemblyProduct("Microsoft Agent Web Supporter")> 
-<Assembly: AssemblyCopyright("Copyright © 2018 - 2025 TMAFE.COM")> 
+<Assembly: AssemblyCopyright("Copyright © 2018 - 2026 TMAFE.COM")> 
 <Assembly: AssemblyTrademark("")> 
 
 <Assembly: ComVisible(False)>
@@ -31,4 +31,4 @@ Imports System.Runtime.InteropServices
 ' by using the '*' as shown below:
 ' <Assembly: AssemblyVersion("1.0.*")> 
 
-<Assembly: AssemblyVersion("1.2.*")> 
+<Assembly: AssemblyVersion("1.3.*")> 
