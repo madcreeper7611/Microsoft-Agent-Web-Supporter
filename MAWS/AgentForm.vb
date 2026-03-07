@@ -341,10 +341,12 @@ Public Class AgentForm
         ElseIf Line.ToLower.Contains("propertysheet.visible") Then
             ' Shows the advanced properties window.
             If Line.ToLower.Contains("true") Then
-                Return ControlAxAgent.PropertySheet.Visible = True
+                ControlAxAgent.PropertySheet.Visible = True
             Else
-                Return ControlAxAgent.PropertySheet.Visible = False
+                ControlAxAgent.PropertySheet.Visible = False
             End If
+
+            Return Nothing
         ElseIf Line.ToLower.StartsWith("shellex") Then
             If QuotesRegex.IsMatch(Line) Then
                 Dim QuotesMatch = QuotesRegex.Match(Line).ToString.Replace("""", "")
