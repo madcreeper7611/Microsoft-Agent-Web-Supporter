@@ -153,7 +153,7 @@ Public Class AgentForm
         ' Regexes for determining categories of requests and if the specific line is a request.
 
         ' Regex for determining if the line is a character request (Example: Merlin.Speak).
-        Dim RequestRegex As New Regex("(?<!(.[^\s]))[A-Za-z0-9]+\.[A-Za-z0-9]+(\.[A-Za-z0-9]+)?")
+        Dim RequestRegex As New Regex("(?<!(""?[A-Za-z0-9]+\s+))(?<!([^\s+]))[A-Za-z0-9]+\.[A-Za-z0-9]+(\.[A-Za-z0-9]+)?")
         ' Regex for determining if the line makes the character speak audio (Example: "Example Sound", "https://example.com/example.wav").
         Dim AudioRegex As New Regex("""(?:[^""]|"""")*"",(\s+)?""(?:[^""]|"""")*""")
         ' Regex for determining if the line contains quotes (Examples: "Welcome to the Microsoft Agent Web Supporter!", or "Greet")
@@ -230,21 +230,22 @@ Public Class AgentForm
                         Else
                             Return ControlAxAgent.Characters(CharID).Speak(SpeakString)
                         End If
-
-                        Return Nothing
                     End If
+
                     Return Nothing
                 ElseIf RequestMatch.Contains(".think") Then
                     ' Makes the character think the current speakstring.
                     If Not SpeakString = Nothing Then
                         Return ControlAxAgent.Characters(CharID).Think(SpeakString)
                     End If
+
                     Return Nothing
                 ElseIf RequestMatch.Contains(".balloon") Then
                     ' Gets the subrequest inside of the main request.
                     If RequestMatch.Contains(".balloon.font") Then
                         ' Sets the font to the name of the font set by the subrequest.
                         ControlAxAgent.Characters(CharID).Balloon.FontName = QuotesMatch
+
                         Return Nothing
                     End If
                 End If
@@ -252,6 +253,7 @@ Public Class AgentForm
                 Return Nothing
             ElseIf BalloonStyleRegex.IsMatch(Line) Then
                 ControlAxAgent.Characters(CharID).Balloon.Style = BalloonStyleRegex.Match(Line).ToString
+
                 Return Nothing
             ElseIf PointRegex.IsMatch(Line) Then
                 Dim PointMatch As String = PointRegex.Match(Line).ToString

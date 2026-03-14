@@ -6,7 +6,7 @@ Public Class LoadFileDialog
     Dim MSHFileRegex As New Regex("^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)\/([-a-zA-Z0-9()@:%_\+.~#?&//=]*).msh$")
 
     Private Sub OKOpenButtonClick(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles OKOpenButton.Click
-        If MSHFileRegex.IsMatch(FileURLTextBox.Text) Then
+        If MSHFileRegex.IsMatch(FileURLTextBox.Text.Trim) Then
             AgentForm.MAWSNotifyIcon.BalloonTipText = "Loading MASH Script..."
             AgentForm.MAWSNotifyIcon.BalloonTipIcon = ToolTipIcon.Info
             AgentForm.ScriptURL = FileURLTextBox.Text
