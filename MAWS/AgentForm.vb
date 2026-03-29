@@ -541,6 +541,14 @@ Public Class AgentForm
         Next
     End Sub
 
+    Private Sub ControlAxAgent_DblClick(ByVal sender As System.Object, ByVal e As AxAgentObjects._AgentEvents_DblClickEvent) Handles ControlAxAgent.DblClick
+        For Each CharID In CharIDs
+            ControlAxAgent.Characters(CharID).StopAll()
+        Next
+
+        HideAllCharacters()
+    End Sub
+
     Private Sub ControlAxAgent_RequestComplete(ByVal sender As System.Object, ByVal e As AxAgentObjects._AgentEvents_RequestCompleteEvent) Handles ControlAxAgent.RequestComplete
         If e.request Is HideReq Then
             ' The amount of characters unloaded in the script.
