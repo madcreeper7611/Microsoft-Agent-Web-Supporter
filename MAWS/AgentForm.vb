@@ -31,6 +31,8 @@ Public Class AgentForm
     Private Sub AgentForm_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
         ControlAxAgent.CreateControl()
         ' Detects if there's command line arguments, if there's not, shows the popup window to load a MASH file from the web.
+        ProcessCheckTimer.Start()
+
         If ScriptURL = Nothing Then
             LoadFileDialog.Show()
         Else
@@ -636,5 +638,22 @@ Public Class AgentForm
                 End If
             End If
         Next
+    End Sub
+
+    Private Sub ProcessCheckTimer_Tick(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles ProcessCheckTimer.Tick
+        ' Gets all existing processes of this application.
+        Dim MAWSProcesses As Process() = Process.GetProcessesByName("MAWS")
+
+        If MAWSProcesses.Length > 1 Then
+            ' Terminates all previous processes that were running prior to the current process.
+            For Each OtherProcess As Process In MAWSProcesses
+                If Not OtherProcess.Id = Process.GetCurrentProcess.Id Then
+                    OtherProcess.Kill()
+                End If
+            Next
+        End If
+
+        ' Ends the process check timer to prevent the previous process from terminating the new process.
+        ProcessCheckTimer.Stop()
     End Sub
 End Class
